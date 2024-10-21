@@ -10,6 +10,7 @@ import com.example.chatting.repository.UserRepository;
 import com.example.chatting.repository.entity.User;
 import com.example.chatting.repository.entity.UserCredentials;
 import com.example.chatting.security.Hasher;
+import com.example.chatting.security.JWTProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class AuthService {
                 throw new CustomException(ErrorCode.USER_SAVED_FAILED);
             }
         } catch (Exception e) {
-            throw  new CustomException(ErrorCode.USER_SAVED_FAILED, e.getMessage())
+            throw  new CustomException(ErrorCode.USER_SAVED_FAILED, e.getMessage());
         }
 
         return new CreateUserResponse(request.name());
@@ -75,10 +76,13 @@ public class AuthService {
             throw new CustomException(ErrorCode.MIS_MATCH_PASSWORD);
         });
 
-        // TODO JWT
-        return new LoginReponse(ErrorCode.SUCCESS, "Token");
+        String token = JWTProvider.createRefreshToken(request.name());
+        return new LoginReponse(ErrorCode.SUCCESS, token);
     }
 
+    public String getUserFromToken(String token) {
+        return JWTProvider.getUserFromToken(token);
+    }
     // User 생성 메서드
     private User newUser(String name){
         User newUser = User.builder()
